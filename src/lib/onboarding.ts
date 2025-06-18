@@ -113,51 +113,41 @@ export class OnboardingService {
     onboardingData: OnboardingData
   ): Promise<{ success: boolean; error?: any; organizationId?: string }> {
     try {
-      // Step 1: Create organization first to get an ID
-      const { data: organization, error: orgError } = await this.createOrganization(
-        onboardingData.organizationName
-      );
-
-      if (orgError || !organization) {
-        console.error('Organization creation failed:', orgError);
-        return { success: false, error: orgError };
-      }
-
-      // Step 2: Upload logo if provided and update organization
-      if (onboardingData.logoFile) {
-        const { url, error: logoError } = await this.uploadLogo(
-          onboardingData.logoFile,
-          organization.id
-        );
-        if (logoError) {
-          console.warn('Logo upload failed, continuing without it:', logoError);
-        } else {
-          // Update the organization with the logo URL
-          await supabase
-            .from('organizations')
-            .update({ logo_url: url })
-            .eq('id', organization.id);
-        }
-      }
-
-      // Step 3: Call the single RPC function for the rest of the onboarding
-      const { error: rpcError } = await supabase.rpc('complete_onboarding', {
+      // Step 1: Call the single RPC to handle the entire database transaction.
+      const { data: newOrgId, error: rpcError } = await supabase.rpc('complete_onboarding', {
         p_user_id: userId,
-        p_org_id: organization.id,
+        p_org_name: onboardingData.organizationName,
         p_dr_name: onboardingData.dataRoomName,
-        p_dr_desc: onboardingData.dataRoomDescription || null,
-        p_invites: onboardingData.teamInvites
+        p_dr_desc: onboardingData.dataRoomDescription,
+        p_invites: onboardingData.teamInvites,
       });
 
       if (rpcError) {
+        // If the atomic function fails, the entire transaction is rolled back automatically.
         console.error('Onboarding RPC failed:', rpcError);
-        // Attempt to clean up the organization if the rest fails
-        await supabase.from('organizations').delete().eq('id', organization.id);
         return { success: false, error: rpcError };
       }
 
-      return { success: true, organizationId: organization.id };
+      // Step 2 (Optional but Recommended): Upload logo now that we have the org ID.
+      if (onboardingData.logoFile && newOrgId) {
+        const { url, error: logoError } = await this.uploadLogo(
+          onboardingData.logoFile,
+          newOrgId
+        );
 
+        if (logoError) {
+          // Don't fail the whole process; just log that the logo upload didn't work.
+          console.warn('Logo upload failed:', logoError);
+        } else {
+          // The user is already a member of the org, so this update is allowed by RLS.
+          await supabase
+            .from('organizations')
+            .update({ logo_url: url })
+            .eq('id', newOrgId);
+        }
+      }
+
+      return { success: true, organizationId: newOrgId };
     } catch (error) {
       console.error('Onboarding completion failed:', error);
       return { success: false, error };
