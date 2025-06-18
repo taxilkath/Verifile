@@ -10,6 +10,13 @@
   body {
     @apply antialiased;
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+  }
 }
 
 @layer utilities {
@@ -57,6 +64,23 @@
     background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0);
     background-size: 20px 20px;
   }
+
+  /* Line clamp utility */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Backdrop blur fallback */
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
 }
 
 @keyframes slideUp {
@@ -88,15 +112,15 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-900;
+  @apply bg-slate-100 dark:bg-slate-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-600 rounded-full;
+  @apply bg-slate-300 dark:bg-slate-600 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-500;
+  @apply bg-slate-400 dark:bg-slate-500;
 }
 
 /* Selection color */
@@ -108,7 +132,7 @@
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900;
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900;
 }
 
 /* Form input animations */
@@ -133,4 +157,48 @@ button:hover:not(:disabled) {
 
 .animate-pulse {
   animation: pulse 3s ease-in-out infinite;
+}
+
+/* Command palette styles */
+[cmdk-root] {
+  max-height: 400px;
+}
+
+[cmdk-input] {
+  font-size: 16px;
+}
+
+[cmdk-item] {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+[cmdk-item][data-selected="true"] {
+  @apply bg-slate-100 dark:bg-slate-700;
+}
+
+[cmdk-group-heading] {
+  @apply text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide px-3 py-2;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Ring offset for dark mode */
+.dark .ring-offset-2 {
+  --tw-ring-offset-color: rgb(15 23 42);
+}
+
+/* Glass morphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

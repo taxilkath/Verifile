@@ -11,7 +11,8 @@ import CTA from './components/CTA';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import DashboardHome from './pages/DashboardHome';
 import Onboarding from './pages/Onboarding';
 
 const HomePage = () => {
@@ -71,7 +72,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const needsOnboarding = !userProfile?.is_onboarded || !userProfile?.organization_id;
   
   // If user needs onboarding and trying to access dashboard, redirect to onboarding
-  if (needsOnboarding && window.location.pathname === '/dashboard') {
+  if (needsOnboarding && window.location.pathname.startsWith('/dashboard')) {
     return <Navigate to="/onboarding" />;
   }
 
@@ -150,10 +151,13 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<DashboardHome />} />
+            {/* Add more dashboard routes here */}
+          </Route>
         </Routes>
       </Router>
     </AuthProvider>
