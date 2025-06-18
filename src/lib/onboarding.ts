@@ -113,7 +113,7 @@ export class OnboardingService {
     onboardingData: OnboardingData
   ): Promise<{ success: boolean; error?: any; organizationId?: string }> {
     try {
-      // Step 1: Create organization first
+      // Step 1: Create organization first to get an ID
       const { data: organization, error: orgError } = await this.createOrganization(
         onboardingData.organizationName
       );
@@ -123,65 +123,41 @@ export class OnboardingService {
         return { success: false, error: orgError };
       }
 
-      // Step 2: Immediately update user profile with organization_id
-      // This is CRITICAL - the user must be associated with the organization before any other operations
-      const { error: profileError } = await this.updateUserProfile(userId, {
-        organization_id: organization.id,
-        is_onboarded: true
-      });
-
-      if (profileError) {
-        console.error('User profile update failed:', profileError);
-        return { success: false, error: profileError };
-      }
-
-      // Step 3: Upload logo if provided (after user is associated with organization)
-      let logoUrl = undefined;
+      // Step 2: Upload logo if provided and update organization
       if (onboardingData.logoFile) {
         const { url, error: logoError } = await this.uploadLogo(
           onboardingData.logoFile,
           organization.id
         );
-
         if (logoError) {
-          console.warn('Logo upload failed:', logoError);
+          console.warn('Logo upload failed, continuing without it:', logoError);
         } else {
-          logoUrl = url;
-          
-          // Update organization with logo URL
+          // Update the organization with the logo URL
           await supabase
             .from('organizations')
-            .update({ logo_url: logoUrl })
+            .update({ logo_url: url })
             .eq('id', organization.id);
         }
       }
 
-      // Step 4: Create data room (now that user is associated with organization)
-      const { error: dataRoomError } = await this.createDataRoom(
-        organization.id,
-        onboardingData.dataRoomName,
-        onboardingData.dataRoomDescription,
-        userId
-      );
+      // Step 3: Call the single RPC function for the rest of the onboarding
+      const { error: rpcError } = await supabase.rpc('complete_onboarding', {
+        p_user_id: userId,
+        p_org_id: organization.id,
+        p_dr_name: onboardingData.dataRoomName,
+        p_dr_desc: onboardingData.dataRoomDescription || null,
+        p_invites: onboardingData.teamInvites
+      });
 
-      if (dataRoomError) {
-        console.warn('Data room creation failed:', dataRoomError);
-      }
-
-      // Step 5: Create team invitations (now that user is associated with organization)
-      if (onboardingData.teamInvites.length > 0) {
-        const { error: inviteError } = await this.createTeamInvitations(
-          organization.id,
-          onboardingData.teamInvites,
-          userId
-        );
-
-        if (inviteError) {
-          console.warn('Team invitations failed:', inviteError);
-        }
+      if (rpcError) {
+        console.error('Onboarding RPC failed:', rpcError);
+        // Attempt to clean up the organization if the rest fails
+        await supabase.from('organizations').delete().eq('id', organization.id);
+        return { success: false, error: rpcError };
       }
 
       return { success: true, organizationId: organization.id };
+
     } catch (error) {
       console.error('Onboarding completion failed:', error);
       return { success: false, error };
