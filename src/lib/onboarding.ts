@@ -113,18 +113,30 @@ export class OnboardingService {
     onboardingData: OnboardingData
   ): Promise<{ success: boolean; error?: any; organizationId?: string }> {
     try {
-      // 1. Create organization
+      // Step 1: Create organization first
       const { data: organization, error: orgError } = await this.createOrganization(
         onboardingData.organizationName
       );
 
       if (orgError || !organization) {
+        console.error('Organization creation failed:', orgError);
         return { success: false, error: orgError };
       }
 
-      let logoUrl = undefined;
+      // Step 2: Immediately update user profile with organization_id
+      // This is CRITICAL - the user must be associated with the organization before any other operations
+      const { error: profileError } = await this.updateUserProfile(userId, {
+        organization_id: organization.id,
+        is_onboarded: true
+      });
 
-      // 2. Upload logo if provided
+      if (profileError) {
+        console.error('User profile update failed:', profileError);
+        return { success: false, error: profileError };
+      }
+
+      // Step 3: Upload logo if provided (after user is associated with organization)
+      let logoUrl = undefined;
       if (onboardingData.logoFile) {
         const { url, error: logoError } = await this.uploadLogo(
           onboardingData.logoFile,
@@ -144,17 +156,7 @@ export class OnboardingService {
         }
       }
 
-      // 3. Update user profile
-      const { error: profileError } = await this.updateUserProfile(userId, {
-        organization_id: organization.id,
-        is_onboarded: true
-      });
-
-      if (profileError) {
-        return { success: false, error: profileError };
-      }
-
-      // 4. Create data room
+      // Step 4: Create data room (now that user is associated with organization)
       const { error: dataRoomError } = await this.createDataRoom(
         organization.id,
         onboardingData.dataRoomName,
@@ -166,7 +168,7 @@ export class OnboardingService {
         console.warn('Data room creation failed:', dataRoomError);
       }
 
-      // 5. Create team invitations
+      // Step 5: Create team invitations (now that user is associated with organization)
       if (onboardingData.teamInvites.length > 0) {
         const { error: inviteError } = await this.createTeamInvitations(
           organization.id,
@@ -181,7 +183,18 @@ export class OnboardingService {
 
       return { success: true, organizationId: organization.id };
     } catch (error) {
+      console.error('Onboarding completion failed:', error);
       return { success: false, error };
     }
+  }
+
+  // Helper method to check if user has organization access
+  static async checkUserOrganizationAccess(userId: string): Promise<{ hasOrganization: boolean; organizationId?: string }> {
+    const { data: profile } = await this.getUserProfile(userId);
+    
+    return {
+      hasOrganization: !!(profile?.organization_id),
+      organizationId: profile?.organization_id || undefined
+    };
   }
 }

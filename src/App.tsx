@@ -39,13 +39,13 @@ const HomePage = () => {
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       if (user) {
         const { data: profile } = await OnboardingService.getUserProfile(user.id);
-        setIsOnboarded(profile?.is_onboarded || false);
+        setUserProfile(profile);
       }
       setCheckingOnboarding(false);
     };
@@ -67,8 +67,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" />;
   }
 
-  // If user is not onboarded and trying to access dashboard, redirect to onboarding
-  if (!isOnboarded && window.location.pathname === '/dashboard') {
+  // Check if user needs onboarding
+  const needsOnboarding = !userProfile?.is_onboarded || !userProfile?.organization_id;
+  
+  // If user needs onboarding and trying to access dashboard, redirect to onboarding
+  if (needsOnboarding && window.location.pathname === '/dashboard') {
     return <Navigate to="/onboarding" />;
   }
 
@@ -78,13 +81,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       if (user) {
         const { data: profile } = await OnboardingService.getUserProfile(user.id);
-        setIsOnboarded(profile?.is_onboarded || false);
+        setUserProfile(profile);
       }
       setCheckingOnboarding(false);
     };
@@ -103,8 +106,11 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (user) {
-    // If user is onboarded, go to dashboard, otherwise go to onboarding
-    return <Navigate to={isOnboarded ? "/dashboard" : "/onboarding"} />;
+    // Check if user needs onboarding
+    const needsOnboarding = !userProfile?.is_onboarded || !userProfile?.organization_id;
+    
+    // If user needs onboarding, go to onboarding, otherwise go to dashboard
+    return <Navigate to={needsOnboarding ? "/onboarding" : "/dashboard"} />;
   }
 
   return <>{children}</>;
