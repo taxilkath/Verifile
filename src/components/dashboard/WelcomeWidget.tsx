@@ -49,6 +49,7 @@ const WelcomeWidget: React.FC<WelcomeWidgetProps> = ({ userName }) => {
         </div>
       </div>
     </motion.div>
+  )
   );
 };
 
