@@ -280,16 +280,18 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({ documents, onDocumentClick 
                   {filteredDocuments.map((document, index) => {
                     const FileIcon = getFileIcon(document.type);
                     return (
-                      <motion.tr
+                      <tr
                         key={document.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
                         className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200 cursor-pointer"
                         onClick={() => onDocumentClick(index)}
                       >
                         <td className="px-6 py-4">
-                          <div className="flex items-center space-x-3">
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="flex items-center space-x-3"
+                          >
                             <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
                               <FileIcon className="h-5 w-5 text-slate-500" />
                             </div>
@@ -301,7 +303,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({ documents, onDocumentClick 
                                 {document.uploadedBy}
                               </div>
                             </div>
-                          </div>
+                          </motion.div>
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
                           {formatFileSize(document.size)}
