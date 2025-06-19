@@ -19,6 +19,7 @@ import Documents from './pages/Documents';
 import Onboarding from './pages/Onboarding';
 import Branding from './pages/Branding';
 import TeamManagement from './pages/TeamManagement';
+import Settings from './pages/Settings';
 
 const HomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -166,6 +167,7 @@ function App() {
             <Route path="documents" element={<Documents />} />
             <Route path="branding" element={<Branding />} />
             <Route path="team" element={<TeamManagement />} />
+            <Route path="settings" element={<Settings />} />
             {/* Add more dashboard routes here */}
           </Route>
         </Routes>
