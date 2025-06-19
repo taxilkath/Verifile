@@ -17,6 +17,7 @@ import DataRooms from './pages/DataRooms';
 import DataRoomDetail from './pages/DataRoomDetail';
 import Documents from './pages/Documents';
 import Onboarding from './pages/Onboarding';
+import Branding from './pages/Branding';
 
 const HomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -162,6 +163,7 @@ function App() {
             <Route path="data-rooms" element={<DataRooms />} />
             <Route path="data-rooms/:id" element={<DataRoomDetail />} />
             <Route path="documents" element={<Documents />} />
+            <Route path="branding" element={<Branding />} />
             {/* Add more dashboard routes here */}
           </Route>
         </Routes>

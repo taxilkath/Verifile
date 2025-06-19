@@ -11,7 +11,8 @@ import {
   Users,
   CreditCard,
   Settings,
-  X
+  X,
+  Palette
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Shared Links', href: '/dashboard/shared-links', icon: Share2 },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Team Management', href: '/dashboard/team', icon: Users },
+  { name: 'Branding', href: '/dashboard/branding', icon: Palette },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

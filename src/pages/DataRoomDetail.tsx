@@ -6,7 +6,6 @@ import { ChevronLeft } from 'lucide-react';
 import DataRoomHeader from '../components/dataroom/DataRoomHeader';
 import DocumentsTab from '../components/dataroom/DocumentsTab';
 import AnalyticsTab from '../components/dataroom/AnalyticsTab';
-import BrandingTab from '../components/dataroom/BrandingTab';
 import ActivityLogTab from '../components/dataroom/ActivityLogTab';
 import TeamAccessTab from '../components/dataroom/TeamAccessTab';
 import DocumentPreviewModal from '../components/DocumentPreviewModal';
@@ -97,7 +96,6 @@ const DataRoomDetail = () => {
               {[
                 { value: 'documents', label: 'Documents', count: documents.length },
                 { value: 'analytics', label: 'Analytics' },
-                { value: 'branding', label: 'Branding' },
                 { value: 'activity', label: 'Activity' },
                 { value: 'team', label: 'Team Access', count: teamMembers.length }
               ].map((tab) => (
@@ -139,10 +137,6 @@ const DataRoomDetail = () => {
 
               <Tabs.Content value="analytics">
                 <AnalyticsTab dataRoom={dataRoom} documents={documents} />
-              </Tabs.Content>
-
-              <Tabs.Content value="branding">
-                <BrandingTab />
               </Tabs.Content>
 
               <Tabs.Content value="activity">
