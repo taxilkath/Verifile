@@ -616,11 +616,8 @@ const Documents = () => {
                             const colorClasses = getFileTypeColor(document.type);
                             
                             return (
-                              <motion.tr
+                              <tr
                                 key={document.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
                                 className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200 cursor-pointer"
                                 onClick={() => handleDocumentClick(index)}
                               >
