@@ -17,7 +17,7 @@ import {
   FolderOpen,
   ArrowLeft
 } from 'lucide-react';
-import DocumentPreviewDialog from './DocumentPreviewDialog';
+import DocumentDetailDrawer from './DocumentDetailDrawer';
 import ShareLinkDialog from './ShareLinkDialog';
 import DocumentActionsMenu from './DocumentActionsMenu';
 import { Document } from '../../types/documents';
@@ -36,7 +36,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
   onDocumentDelete,
   selectedFolder
 }) => {
-  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [shareDocument, setShareDocument] = useState<Document | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
@@ -90,10 +90,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
     toast.success(`Downloaded ${document.name}`);
   };
 
-  const handleView = (document: Document) => {
+  const handleDocumentClick = (document: Document) => {
     // Update view count
     onDocumentUpdate(document.id, { views: document.views + 1 });
-    setPreviewDocument(document);
+    setSelectedDocument(document);
   };
 
   return (
@@ -147,7 +147,8 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.05 }}
-                      className="group hover:bg-slate-50/80 dark:hover:bg-slate-700/50 transition-all duration-300"
+                      className="group hover:bg-slate-50/80 dark:hover:bg-slate-700/50 transition-all duration-300 cursor-pointer"
+                      onClick={() => handleDocumentClick(document)}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-4">
@@ -217,16 +218,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end space-x-2">
                           <motion.button
-                            onClick={() => handleView(document)}
-                            className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200"
-                            whileHover={{ scale: 1.1, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </motion.button>
-                          
-                          <motion.button
-                            onClick={() => handleDownload(document)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(document);
+                            }}
                             disabled={downloadingId === document.id}
                             className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-all duration-200 disabled:opacity-50"
                             whileHover={{ scale: 1.1, y: -2 }}
@@ -244,7 +239,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
                           </motion.button>
                           
                           <motion.button
-                            onClick={() => setShareDocument(document)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShareDocument(document);
+                            }}
                             className="p-2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all duration-200"
                             whileHover={{ scale: 1.1, y: -2 }}
                             whileTap={{ scale: 0.95 }}
@@ -252,11 +250,13 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
                             <Share2 className="h-4 w-4" />
                           </motion.button>
                           
-                          <DocumentActionsMenu
-                            document={document}
-                            onUpdate={onDocumentUpdate}
-                            onDelete={onDocumentDelete}
-                          />
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <DocumentActionsMenu
+                              document={document}
+                              onUpdate={onDocumentUpdate}
+                              onDelete={onDocumentDelete}
+                            />
+                          </div>
                         </div>
                       </td>
                     </motion.tr>
@@ -268,13 +268,16 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({
         </div>
       </div>
 
-      {/* Dialogs */}
-      <DocumentPreviewDialog
-        document={previewDocument}
-        open={!!previewDocument}
-        onClose={() => setPreviewDocument(null)}
+      {/* Document Detail Drawer */}
+      <DocumentDetailDrawer
+        document={selectedDocument}
+        open={!!selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+        onUpdate={onDocumentUpdate}
+        onDelete={onDocumentDelete}
       />
 
+      {/* Share Dialog */}
       <ShareLinkDialog
         document={shareDocument}
         open={!!shareDocument}
