@@ -82,6 +82,32 @@ const mockDocuments: Document[] = [
     downloads: 23,
     dataRoom: 'Company Assets',
     tags: ['photo', 'team']
+  },
+  {
+    id: '6',
+    name: 'Marketing Strategy.pdf',
+    type: 'application/pdf',
+    size: 1876543,
+    uploadedBy: 'Lisa Wang',
+    uploadedAt: '2024-01-10T09:30:00Z',
+    url: 'https://example.com/doc6.pdf',
+    views: 92,
+    downloads: 41,
+    dataRoom: 'Product Strategy',
+    tags: ['marketing', 'strategy']
+  },
+  {
+    id: '7',
+    name: 'Board Presentation.pptx',
+    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    size: 4321098,
+    uploadedBy: 'David Kim',
+    uploadedAt: '2024-01-09T15:45:00Z',
+    url: 'https://example.com/doc7.pptx',
+    views: 203,
+    downloads: 78,
+    dataRoom: 'Board Materials',
+    tags: ['board', 'presentation']
   }
 ];
 
@@ -122,6 +148,7 @@ const Documents = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
+  // Enhanced filtering logic
   const filteredDocuments = documents
     .filter(doc => {
       // If a folder is selected, only show documents in that folder
@@ -129,22 +156,30 @@ const Documents = () => {
         return doc.folderId === selectedFolder;
       }
       
-      // Otherwise show documents not in any folder
+      // Otherwise show documents not in any folder (unless "all" is selected)
       if (!selectedFolder && doc.folderId) {
         return false;
       }
 
-      const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           doc.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      // Search filter
+      const matchesSearch = searchQuery === '' || 
+        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        doc.uploadedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.dataRoom.toLowerCase().includes(searchQuery.toLowerCase());
       
+      // Data room filter
       const matchesDataRoom = selectedDataRoom === 'all' || doc.dataRoom === selectedDataRoom;
       
+      // File type filter with enhanced matching
       const matchesFileType = selectedFileType === 'all' || 
-                             (selectedFileType === 'pdf' && doc.type.includes('pdf')) ||
-                             (selectedFileType === 'docx' && doc.type.includes('word')) ||
-                             (selectedFileType === 'pptx' && doc.type.includes('presentation')) ||
-                             (selectedFileType === 'xlsx' && doc.type.includes('spreadsheet'));
+        (selectedFileType === 'pdf' && doc.type.includes('pdf')) ||
+        (selectedFileType === 'docx' && (doc.type.includes('word') || doc.type.includes('document'))) ||
+        (selectedFileType === 'pptx' && (doc.type.includes('presentation') || doc.name.toLowerCase().includes('.pptx'))) ||
+        (selectedFileType === 'xlsx' && (doc.type.includes('spreadsheet') || doc.name.toLowerCase().includes('.xlsx'))) ||
+        (selectedFileType === 'images' && doc.type.includes('image')) ||
+        (selectedFileType === 'videos' && doc.type.includes('video'));
       
       return matchesSearch && matchesDataRoom && matchesFileType;
     })
@@ -156,8 +191,16 @@ const Documents = () => {
           return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
         case 'most-viewed':
           return b.views - a.views;
-        case 'name':
+        case 'most-downloaded':
+          return b.downloads - a.downloads;
+        case 'name-asc':
           return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'size-asc':
+          return a.size - b.size;
+        case 'size-desc':
+          return b.size - a.size;
         default:
           return 0;
       }
@@ -204,6 +247,9 @@ const Documents = () => {
       case 'most-viewed':
         setSortBy('most-viewed');
         break;
+      case 'downloads':
+        setSortBy('most-downloaded');
+        break;
       case 'recent':
         setSortBy('newest');
         break;
@@ -211,6 +257,18 @@ const Documents = () => {
         break;
     }
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedDataRoom('all');
+    setSelectedFileType('all');
+    setSortBy('newest');
+    setSelectedFolder(null);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery !== '' || selectedDataRoom !== 'all' || selectedFileType !== 'all' || selectedFolder !== null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -273,11 +331,19 @@ const Documents = () => {
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search documents by name, description, or tags..."
+                    placeholder="Search documents by name, description, tags, author, or data room..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-12 pr-4 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
 
                 {/* Filters Row */}
@@ -287,7 +353,9 @@ const Documents = () => {
                     <Select.Trigger className="flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 min-w-[200px] shadow-lg hover:shadow-xl">
                       <div className="flex items-center space-x-2">
                         <FolderOpen className="h-4 w-4 text-slate-400" />
-                        <Select.Value placeholder="All Data Rooms" />
+                        <Select.Value placeholder="All Data Rooms">
+                          {selectedDataRoom === 'all' ? 'All Data Rooms' : selectedDataRoom}
+                        </Select.Value>
                       </div>
                       <ChevronDown className="h-4 w-4 text-slate-400" />
                     </Select.Trigger>
@@ -310,7 +378,15 @@ const Documents = () => {
                     <Select.Trigger className="flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 min-w-[150px] shadow-lg hover:shadow-xl">
                       <div className="flex items-center space-x-2">
                         <Filter className="h-4 w-4 text-slate-400" />
-                        <Select.Value placeholder="All Types" />
+                        <Select.Value placeholder="All Types">
+                          {selectedFileType === 'all' ? 'All Types' : 
+                           selectedFileType === 'pdf' ? 'PDF' :
+                           selectedFileType === 'docx' ? 'DOCX' :
+                           selectedFileType === 'pptx' ? 'PPTX' :
+                           selectedFileType === 'xlsx' ? 'XLSX' :
+                           selectedFileType === 'images' ? 'Images' :
+                           selectedFileType === 'videos' ? 'Videos' : selectedFileType}
+                        </Select.Value>
                       </div>
                       <ChevronDown className="h-4 w-4 text-slate-400" />
                     </Select.Trigger>
@@ -320,16 +396,22 @@ const Documents = () => {
                           All Types
                         </Select.Item>
                         <Select.Item value="pdf" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          PDF
+                          PDF Documents
                         </Select.Item>
                         <Select.Item value="docx" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          DOCX
+                          Word Documents
                         </Select.Item>
                         <Select.Item value="pptx" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          PPTX
+                          Presentations
                         </Select.Item>
                         <Select.Item value="xlsx" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          XLSX
+                          Spreadsheets
+                        </Select.Item>
+                        <Select.Item value="images" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Images
+                        </Select.Item>
+                        <Select.Item value="videos" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Videos
                         </Select.Item>
                       </Select.Content>
                     </Select.Portal>
@@ -340,28 +422,97 @@ const Documents = () => {
                     <Select.Trigger className="flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 min-w-[150px] shadow-lg hover:shadow-xl">
                       <div className="flex items-center space-x-2">
                         <TrendingUp className="h-4 w-4 text-slate-400" />
-                        <Select.Value />
+                        <Select.Value>
+                          {sortBy === 'newest' ? 'Newest' :
+                           sortBy === 'oldest' ? 'Oldest' :
+                           sortBy === 'most-viewed' ? 'Most Viewed' :
+                           sortBy === 'most-downloaded' ? 'Most Downloaded' :
+                           sortBy === 'name-asc' ? 'Name A-Z' :
+                           sortBy === 'name-desc' ? 'Name Z-A' :
+                           sortBy === 'size-asc' ? 'Size (Small)' :
+                           sortBy === 'size-desc' ? 'Size (Large)' : 'Sort'}
+                        </Select.Value>
                       </div>
                       <ChevronDown className="h-4 w-4 text-slate-400" />
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Content className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl z-50 p-2">
                         <Select.Item value="newest" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          Newest
+                          Newest First
                         </Select.Item>
                         <Select.Item value="oldest" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          Oldest
+                          Oldest First
                         </Select.Item>
                         <Select.Item value="most-viewed" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
                           Most Viewed
                         </Select.Item>
-                        <Select.Item value="name" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
-                          Name
+                        <Select.Item value="most-downloaded" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Most Downloaded
+                        </Select.Item>
+                        <Select.Item value="name-asc" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Name (A-Z)
+                        </Select.Item>
+                        <Select.Item value="name-desc" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Name (Z-A)
+                        </Select.Item>
+                        <Select.Item value="size-asc" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Size (Smallest)
+                        </Select.Item>
+                        <Select.Item value="size-desc" className="px-3 py-2 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 rounded-xl cursor-pointer transition-colors">
+                          Size (Largest)
                         </Select.Item>
                       </Select.Content>
                     </Select.Portal>
                   </Select.Root>
+
+                  {/* Clear Filters Button */}
+                  {hasActiveFilters && (
+                    <motion.button
+                      onClick={clearFilters}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Clear Filters
+                    </motion.button>
+                  )}
                 </div>
+
+                {/* Active Filters Display */}
+                {hasActiveFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap gap-2"
+                  >
+                    {searchQuery && (
+                      <span className="inline-flex items-center px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full">
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery('')} className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200">×</button>
+                      </span>
+                    )}
+                    {selectedDataRoom !== 'all' && (
+                      <span className="inline-flex items-center px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm rounded-full">
+                        Room: {selectedDataRoom}
+                        <button onClick={() => setSelectedDataRoom('all')} className="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200">×</button>
+                      </span>
+                    )}
+                    {selectedFileType !== 'all' && (
+                      <span className="inline-flex items-center px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm rounded-full">
+                        Type: {selectedFileType.toUpperCase()}
+                        <button onClick={() => setSelectedFileType('all')} className="ml-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200">×</button>
+                      </span>
+                    )}
+                    {selectedFolder && (
+                      <span className="inline-flex items-center px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-sm rounded-full">
+                        Folder: {folders.find(f => f.id === selectedFolder)?.name}
+                        <button onClick={() => setSelectedFolder(null)} className="ml-2 text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-200">×</button>
+                      </span>
+                    )}
+                  </motion.div>
+                )}
               </motion.div>
 
               {/* Folders Section */}
@@ -380,6 +531,18 @@ const Documents = () => {
                   onFolderDelete={handleFolderDelete}
                 />
               </motion.div>
+
+              {/* Results Summary */}
+              {filteredDocuments.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mb-4 text-sm text-slate-600 dark:text-slate-400"
+                >
+                  Showing {filteredDocuments.length} of {documents.length} documents
+                  {hasActiveFilters && ' (filtered)'}
+                </motion.div>
+              )}
 
               {/* Documents Table */}
               <motion.div
@@ -406,22 +569,26 @@ const Documents = () => {
                     <Search className="h-16 w-16 text-slate-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                    {searchQuery || selectedDataRoom !== 'all' || selectedFileType !== 'all' 
-                      ? 'No documents found' 
-                      : selectedFolder
-                      ? 'No documents in this folder'
-                      : 'No documents yet'
-                    }
+                    {hasActiveFilters ? 'No documents found' : 
+                     selectedFolder ? 'No documents in this folder' : 
+                     'No documents yet'}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
-                    {searchQuery || selectedDataRoom !== 'all' || selectedFileType !== 'all'
+                    {hasActiveFilters
                       ? 'Try adjusting your search criteria or filters to find what you\'re looking for.'
                       : selectedFolder
                       ? 'This folder is empty. Upload documents or move existing ones here.'
                       : 'Upload your first document to get started with secure document sharing.'
                     }
                   </p>
-                  {(!searchQuery && selectedDataRoom === 'all' && selectedFileType === 'all' && !selectedFolder) && (
+                  {hasActiveFilters ? (
+                    <button
+                      onClick={clearFilters}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-colors duration-200"
+                    >
+                      Clear All Filters
+                    </button>
+                  ) : !selectedFolder && (
                     <UploadButton onDocumentsAdd={handleDocumentsAdd} />
                   )}
                 </motion.div>
