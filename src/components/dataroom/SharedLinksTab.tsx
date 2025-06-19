@@ -37,7 +37,7 @@ interface SharedLinksTabProps {
   sharedLinks: SharedLink[];
 }
 
-const SharedLinksTab: React.FC<SharedLinksTabProps> = ({ sharedLinks }) => {
+const SharedLinksTab: React.FC<SharedLinksTabProps> = ({ sharedLinks = [] }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newLink, setNewLink] = useState({
     name: '',
@@ -91,147 +91,136 @@ const SharedLinksTab: React.FC<SharedLinksTabProps> = ({ sharedLinks }) => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Shared Links
+            Links
           </h3>
           <p className="text-slate-600 dark:text-slate-400">
-            Create secure links to share your data room with external parties
+            Share data room with strong access controls using links.
           </p>
         </div>
         
+        <div className="flex items-center space-x-2">
+          <button className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm">
+            Links
+          </button>
+          <button className="px-3 py-1 text-slate-500 dark:text-slate-400 rounded-lg text-sm">
+            Groups
+          </button>
+        </div>
+      </div>
+
+      {/* Links List */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-200 dark:border-slate-700">
+              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500 dark:text-slate-400">Name</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500 dark:text-slate-400">Link</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500 dark:text-slate-400">Last Viewed</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500 dark:text-slate-400">Active</th>
+              <th className="text-right py-3 px-4 text-sm font-medium text-slate-500 dark:text-slate-400"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {sharedLinks.length > 0 ? (
+              sharedLinks.map((link) => {
+                const PermissionIcon = getPermissionIcon(link.permissions);
+                return (
+                  <tr key={link.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="py-3 px-4 text-sm text-slate-900 dark:text-white">
+                      {link.name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="bg-slate-100 dark:bg-slate-700 rounded px-2 py-1 text-xs text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                          {link.url}
+                        </div>
+                        <button 
+                          onClick={() => copyToClipboard(link.url)}
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => window.open(link.url, '_blank')}
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-400">
+                      {link.views > 0 ? formatDate(link.createdAt) : '-'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" defaultChecked={link.isActive} />
+                          <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                          <span className="ml-2 text-sm text-slate-900 dark:text-white">{link.isActive ? 'Yes' : 'No'}</span>
+                        </label>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                        <Settings className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
+                  No shared links yet. Create your first link to share this data room.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Active Link Controls */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">
+          Active Link Controls
+        </h4>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Require email to view
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Receive email notification
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Allow downloads
+            </span>
+          </div>
+        </div>
+        <button 
+          className="w-full mt-3 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors"
+        >
+          Configure link
+        </button>
+      </div>
+
+      {/* Create Link Button */}
+      <div className="flex justify-end">
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
         >
           <Plus className="h-4 w-4" />
           <span>Create Link</span>
         </button>
       </div>
-
-      {/* Links List */}
-      <div className="space-y-4">
-        {sharedLinks.map((link, index) => {
-          const PermissionIcon = getPermissionIcon(link.permissions);
-          const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
-          
-          return (
-            <motion.div
-              key={link.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`bg-white dark:bg-slate-800 rounded-xl border p-6 transition-all duration-200 hover:shadow-lg ${
-                isExpired 
-                  ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10' 
-                  : link.isActive
-                  ? 'border-slate-200 dark:border-slate-700'
-                  : 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/10'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4 flex-1">
-                  <div className={`p-3 rounded-lg ${
-                    isExpired 
-                      ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                      : link.isActive
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                  }`}>
-                    <PermissionIcon className="h-5 w-5" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
-                        {link.name}
-                      </h4>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        isExpired
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                          : link.isActive
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-                      }`}>
-                        {isExpired ? 'Expired' : link.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    
-                    <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-3 mb-3">
-                      <div className="flex items-center space-x-2">
-                        <code className="text-sm text-slate-600 dark:text-slate-300 flex-1 truncate">
-                          {link.url}
-                        </code>
-                        <button
-                          onClick={() => copyToClipboard(link.url)}
-                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => window.open(link.url, '_blank')}
-                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-6 text-sm text-slate-500 dark:text-slate-400">
-                      <div className="flex items-center space-x-1">
-                        <Eye className="h-4 w-4" />
-                        <span>{link.views} views</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Created {formatDate(link.createdAt)}</span>
-                      </div>
-                      {link.expiresAt && (
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Expires {formatDate(link.expiresAt)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200">
-                    <Settings className="h-4 w-4" />
-                  </button>
-                  <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Empty State */}
-      {sharedLinks.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-12"
-        >
-          <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Link className="h-12 w-12 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-            No shared links yet
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Create secure links to share your data room with external parties
-          </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors duration-200"
-          >
-            Create Your First Link
-          </button>
-        </motion.div>
-      )}
 
       {/* Create Link Modal */}
       <Dialog.Root open={showCreateModal} onOpenChange={setShowCreateModal}>
