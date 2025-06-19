@@ -24,8 +24,6 @@ const navigation = [
   { name: 'Dashboard Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Data Rooms', href: '/dashboard/data-rooms', icon: FolderOpen },
   { name: 'Documents', href: '/dashboard/documents', icon: FileText },
-  { name: 'Shared Links', href: '/dashboard/shared-links', icon: Share2 },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Team Management', href: '/dashboard/team', icon: Users },
   { name: 'Branding', href: '/dashboard/branding', icon: Palette },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
