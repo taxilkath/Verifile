@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Menu, 
   Search, 
@@ -19,7 +19,12 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, onCommandPaletteOpen }) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
@@ -52,13 +57,29 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, onCommandPaletteOpen }) =>
             </button>
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <Bell className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <div className="relative">
+              <button 
+                className="relative p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                onClick={toggleNotifications}
+              >
+                <Bell className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="font-semibold text-slate-900 dark:text-white">Notifications</h3>
+                  </div>
+                  <div className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                    No new notifications
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* User menu */}
-            <UserAvatar user={user} onSignOut={signOut} />
+            <UserAvatar user={user} />
           </div>
         </div>
       </div>
