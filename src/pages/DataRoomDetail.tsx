@@ -29,6 +29,10 @@ import DocumentsTab from '../components/dataroom/DocumentsTab';
 import AnalyticsTab from '../components/dataroom/AnalyticsTab';
 import ActivityLogTab from '../components/dataroom/ActivityLogTab';
 import TeamAccessTab from '../components/dataroom/TeamAccessTab';
+import SharedLinksTab from '../components/dataroom/SharedLinksTab';
+import QAConversationsTab from '../components/dataroom/QAConversationsTab';
+import BrandingTab from '../components/dataroom/BrandingTab';
+import SettingsTab from '../components/dataroom/SettingsTab';
 import DocumentPreviewModal from '../components/DocumentPreviewModal';
 import { useDataRoom } from '../hooks/useDataRoom';
 import { toast } from 'sonner';
@@ -378,7 +382,10 @@ const DataRoomDetail = () => {
                               </div>
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                              <button 
+                                onClick={handleConfigureLink}
+                                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                              >
                                 <MoreVertical className="h-4 w-4" />
                               </button>
                             </td>
@@ -448,226 +455,17 @@ const DataRoomDetail = () => {
 
               {/* Q&A Conversations Tab */}
               <Tabs.Content value="qa-conversations">
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center">
-                  <MessageSquare className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                    Q&A Conversations
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                    Enable Q&A conversations to allow viewers to ask questions about your documents.
-                  </p>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
-                    Enable Q&A
-                  </button>
-                </div>
+                <QAConversationsTab />
               </Tabs.Content>
 
               {/* Branding Tab */}
               <Tabs.Content value="branding">
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
-                  <div className="max-w-3xl mx-auto">
-                    <div className="flex items-center space-x-4 mb-6">
-                      <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                        <Palette className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Dataroom Branding</h3>
-                        <p className="text-slate-600 dark:text-slate-400">Customize the appearance of this dataroom</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* Logo Upload */}
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Logo <span className="text-slate-500">(max 2 MB)</span>
-                        </label>
-                        <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center">
-                          <div className="space-y-3">
-                            <div className="inline-flex p-4 bg-slate-100 dark:bg-slate-700 rounded-full">
-                              <Palette className="h-8 w-8 text-slate-400" />
-                            </div>
-                            <div>
-                              <p className="text-slate-600 dark:text-slate-400 font-medium">
-                                Click to upload or drag and drop
-                              </p>
-                              <p className="text-slate-500 dark:text-slate-500 text-sm">
-                                PNG, JPG, SVG up to 2MB
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Brand Color */}
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Brand Color
-                        </label>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 rounded-lg border-2 border-slate-200 dark:border-slate-600 bg-blue-600"></div>
-                          <input
-                            type="text"
-                            defaultValue="#2563eb"
-                            className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Background Color */}
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Background Color
-                        </label>
-                        <div className="grid grid-cols-6 gap-2 mb-3">
-                          {['#ffffff', '#f8fafc', '#f1f5f9', '#64748b', '#334155', '#000000'].map((color) => (
-                            <button
-                              key={color}
-                              className={`w-12 h-12 rounded-lg border-2 ${
-                                color === '#ffffff' 
-                                  ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
-                                  : 'border-slate-200 dark:border-slate-600'
-                              }`}
-                              style={{ backgroundColor: color }}
-                            >
-                              {color === '#ffffff' && (
-                                <Check className="h-4 w-4 text-blue-600 mx-auto" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex space-x-3 pt-4">
-                        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-                          Save Changes
-                        </button>
-                        <button className="px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                          Reset to default
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <BrandingTab />
               </Tabs.Content>
 
               {/* Settings Tab */}
               <Tabs.Content value="settings">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                  {/* Sidebar */}
-                  <div className="md:col-span-1">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                      <div className="p-4">
-                        <button className="w-full flex items-center space-x-3 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-900 dark:text-white">
-                          <Cog className="h-5 w-5 text-slate-500" />
-                          <span>General</span>
-                        </button>
-                        <button className="w-full flex items-center space-x-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg mt-1">
-                          <Bell className="h-5 w-5 text-slate-500" />
-                          <span>Notifications</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Settings Content */}
-                  <div className="md:col-span-3">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                      <div className="p-6 space-y-8">
-                        {/* Dataroom Name */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                            Dataroom Name
-                          </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                            This is the name of your data room.
-                          </p>
-                          <div className="space-y-2">
-                            <input
-                              type="text"
-                              defaultValue="Dataroom #1"
-                              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <div className="flex items-center justify-between">
-                              <div className="text-xs text-slate-500 dark:text-slate-400">
-                                Max 32 characters
-                              </div>
-                              <button 
-                                onClick={handleSaveChanges}
-                                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors"
-                              >
-                                Save Changes
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Duplicate Dataroom */}
-                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                            Duplicate Dataroom
-                          </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                            Create a new data room with the same content (folders and files) as this data room.
-                          </p>
-                          <div className="flex justify-end">
-                            <button 
-                              onClick={handleDuplicateDataroom}
-                              className="flex items-center space-x-2 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors"
-                            >
-                              <span>Upgrade to Duplicate Datarooms</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Dataroom ID */}
-                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                            Dataroom ID
-                          </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                            Unique ID of your dataroom.
-                          </p>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="text"
-                              value="cmc0qj1x1001jw40jwo12727"
-                              readOnly
-                              className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none text-slate-600 dark:text-slate-400"
-                            />
-                            <button 
-                              onClick={handleCopyLink}
-                              className="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
-                            >
-                              <Copy className="h-5 w-5" />
-                            </button>
-                          </div>
-                          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                            Used to identify your dataroom when interacting with the API.
-                          </p>
-                        </div>
-
-                        {/* Danger Zone */}
-                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
-                          <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2 flex items-center">
-                            <AlertTriangle className="h-5 w-5 mr-2" />
-                            Danger Zone
-                          </h3>
-                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mt-4">
-                            <h4 className="font-medium text-red-800 dark:text-red-300 mb-2">Delete this dataroom</h4>
-                            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                              Once you delete a dataroom, there is no going back. Please be certain.
-                            </p>
-                            <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
-                              Delete Dataroom
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <SettingsTab dataroomId={id || ''} dataroomName={dataRoom.name} />
               </Tabs.Content>
             </motion.div>
           </Tabs.Root>

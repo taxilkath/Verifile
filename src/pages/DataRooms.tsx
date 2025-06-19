@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   FolderOpen,
   Plus,
@@ -117,6 +118,7 @@ const mockDataRooms: DataRoom[] = [
 ];
 
 const DataRooms = () => {
+  const navigate = useNavigate();
   const [dataRooms, setDataRooms] = useState<DataRoom[]>(mockDataRooms);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,12 +136,17 @@ const DataRooms = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const toggleStar = (roomId: string) => {
+  const toggleStar = (e: React.MouseEvent, roomId: string) => {
+    e.stopPropagation(); // Prevent navigation when clicking the star
     setDataRooms(rooms => 
       rooms.map(room => 
         room.id === roomId ? { ...room, isStarred: !room.isStarred } : room
       )
     );
+  };
+
+  const handleViewDataRoom = (roomId: string) => {
+    navigate(`/dashboard/data-rooms/${roomId}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -275,16 +282,17 @@ const DataRooms = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-slate-900/10 dark:hover:shadow-black/20 overflow-hidden"
+                className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-slate-900/10 dark:hover:shadow-black/20 overflow-hidden cursor-pointer"
                 onHoverStart={() => setSelectedRoom(room.id)}
                 onHoverEnd={() => setSelectedRoom(null)}
+                onClick={() => handleViewDataRoom(room.id)}
               >
                 {/* Gradient Header */}
                 <div className={`h-24 bg-gradient-to-r ${room.gradient} relative overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10"></div>
                   <div className="absolute top-4 right-4 flex items-center space-x-2">
                     <button
-                      onClick={() => toggleStar(room.id)}
+                      onClick={(e) => toggleStar(e, room.id)}
                       className={`p-1.5 rounded-full transition-all duration-200 ${
                         room.isStarred
                           ? 'bg-yellow-400 text-yellow-900'
@@ -384,17 +392,44 @@ const DataRooms = () => {
                         exit={{ opacity: 0, y: 10 }}
                         className="flex items-center space-x-2"
                       >
-                        <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1">
+                        <button 
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDataRoom(room.id);
+                          }}
+                        >
                           <Eye className="h-3 w-3" />
                           <span>View</span>
                         </button>
-                        <button className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 p-2 rounded-lg transition-colors duration-200">
+                        
+                        <button 
+                          className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 p-2 rounded-lg transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle share action
+                          }}
+                        >
                           <Share2 className="h-3 w-3" />
                         </button>
-                        <button className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 p-2 rounded-lg transition-colors duration-200">
+                        
+                        <button 
+                          className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 p-2 rounded-lg transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle edit action
+                          }}
+                        >
                           <Edit3 className="h-3 w-3" />
                         </button>
-                        <button className="bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 p-2 rounded-lg transition-colors duration-200">
+                        
+                        <button 
+                          className="bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 p-2 rounded-lg transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle delete action
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </button>
                       </motion.div>
@@ -446,7 +481,8 @@ const DataRooms = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200 cursor-pointer"
+                      onClick={() => handleViewDataRoom(room.id)}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-3">
@@ -485,16 +521,40 @@ const DataRooms = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                          <button 
+                            className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDataRoom(room.id);
+                            }}
+                          >
                             <Eye className="h-4 w-4" />
                           </button>
-                          <button className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200">
+                          <button 
+                            className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle share action
+                            }}
+                          >
                             <Share2 className="h-4 w-4" />
                           </button>
-                          <button className="p-2 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200">
+                          <button 
+                            className="p-2 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle edit action
+                            }}
+                          >
                             <Edit3 className="h-4 w-4" />
                           </button>
-                          <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200">
+                          <button 
+                            className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle delete action
+                            }}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
