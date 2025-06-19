@@ -14,7 +14,7 @@ import ReviewStep from '../components/onboarding/steps/ReviewStep';
 const TOTAL_STEPS = 5;
 
 const Onboarding = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -28,6 +28,8 @@ const Onboarding = () => {
   // Check if user is already onboarded
   useEffect(() => {
     const checkOnboardingStatus = async () => {
+      if (loading) return; // Wait for auth to load
+      
       if (!user) {
         navigate('/login');
         return;
@@ -40,9 +42,16 @@ const Onboarding = () => {
     };
 
     checkOnboardingStatus();
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const handleSkip = () => {
+    // Check if user is authenticated before allowing skip
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    // User is authenticated, allow them to skip to dashboard
     navigate('/dashboard');
   };
 
@@ -95,7 +104,10 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     const result = await OnboardingService.completeOnboarding(user.id, onboardingData);
     
@@ -163,6 +175,16 @@ const Onboarding = () => {
     }
   };
 
+  // Show loading spinner while auth is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  // If no user after loading is complete, redirect to login
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
