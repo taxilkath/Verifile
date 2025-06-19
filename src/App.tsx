@@ -15,6 +15,7 @@ import DashboardLayout from './components/dashboard/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import DataRooms from './pages/DataRooms';
 import DataRoomDetail from './pages/DataRoomDetail';
+import Documents from './pages/Documents';
 import Onboarding from './pages/Onboarding';
 
 const HomePage = () => {
@@ -160,6 +161,7 @@ function App() {
             <Route index element={<DashboardHome />} />
             <Route path="data-rooms" element={<DataRooms />} />
             <Route path="data-rooms/:id" element={<DataRoomDetail />} />
+            <Route path="documents" element={<Documents />} />
             {/* Add more dashboard routes here */}
           </Route>
         </Routes>
