@@ -27,9 +27,11 @@ import {
   ChevronDown,
   Activity,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Palette
 } from 'lucide-react';
 import { Document } from '../../types/documents';
+import BrandingTab from '../dataroom/BrandingTab';
 import { toast } from 'sonner';
 
 interface DocumentDetailDrawerProps {
@@ -91,7 +93,7 @@ const DocumentDetailDrawer: React.FC<DocumentDetailDrawerProps> = ({
     {
       id: '1',
       name: 'Link #jpjyz',
-      url: 'https://www.papermark.com/view/cmc3pni4a000ajs04dcx09tr4',
+      url: 'https://www.verifile.com/view/cmc3pni4a000ajs04dcx09tr4',
       views: 0,
       lastViewed: '-',
       active: true,
@@ -369,6 +371,19 @@ const DocumentDetailDrawer: React.FC<DocumentDetailDrawerProps> = ({
                         }`}
                       >
                         All visitors ({visitors.length})
+                      </Tabs.Trigger>
+                      <Tabs.Trigger
+                        value="branding"
+                        className={`px-6 py-4 text-sm font-medium transition-all duration-200 border-b-2 ${
+                          activeTab === 'branding'
+                            ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800'
+                            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Palette className="h-4 w-4" />
+                          <span>Branding</span>
+                        </div>
                       </Tabs.Trigger>
                     </Tabs.List>
 
@@ -767,6 +782,10 @@ const DocumentDetailDrawer: React.FC<DocumentDetailDrawerProps> = ({
                             </div>
                           )}
                         </div>
+                      </Tabs.Content>
+
+                      <Tabs.Content value="branding" className="p-6">
+                        <BrandingTab />
                       </Tabs.Content>
                     </div>
                   </Tabs.Root>

@@ -10,7 +10,8 @@ import {
   Edit3,
   Share2,
   Settings,
-  Star
+  Star,
+  Palette
 } from 'lucide-react';
 
 interface DataRoom {
@@ -96,6 +97,11 @@ const DataRoomHeader: React.FC<DataRoomHeaderProps> = ({ dataRoom }) => {
 
             {/* Action Buttons */}
             <div className="flex items-center space-x-3">
+              <button className="flex items-center space-x-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-200">
+                <Palette className="h-4 w-4" />
+                <span>Branding</span>
+              </button>
+              
               <button className="flex items-center space-x-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
                 <span>Share</span>

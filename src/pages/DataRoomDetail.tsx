@@ -6,7 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import DataRoomHeader from '../components/dataroom/DataRoomHeader';
 import DocumentsTab from '../components/dataroom/DocumentsTab';
 import AnalyticsTab from '../components/dataroom/AnalyticsTab';
-import SharedLinksTab from '../components/dataroom/SharedLinksTab';
+import BrandingTab from '../components/dataroom/BrandingTab';
 import ActivityLogTab from '../components/dataroom/ActivityLogTab';
 import TeamAccessTab from '../components/dataroom/TeamAccessTab';
 import DocumentPreviewModal from '../components/DocumentPreviewModal';
@@ -97,7 +97,7 @@ const DataRoomDetail = () => {
               {[
                 { value: 'documents', label: 'Documents', count: documents.length },
                 { value: 'analytics', label: 'Analytics' },
-                { value: 'shared-links', label: 'Shared Links', count: sharedLinks.length },
+                { value: 'branding', label: 'Branding' },
                 { value: 'activity', label: 'Activity' },
                 { value: 'team', label: 'Team Access', count: teamMembers.length }
               ].map((tab) => (
@@ -141,8 +141,8 @@ const DataRoomDetail = () => {
                 <AnalyticsTab dataRoom={dataRoom} documents={documents} />
               </Tabs.Content>
 
-              <Tabs.Content value="shared-links">
-                <SharedLinksTab sharedLinks={sharedLinks} />
+              <Tabs.Content value="branding">
+                <BrandingTab />
               </Tabs.Content>
 
               <Tabs.Content value="activity">
