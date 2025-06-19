@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   FolderOpen,
   FileText,
-  Share2,
   BarChart3,
   Users,
   CreditCard,
